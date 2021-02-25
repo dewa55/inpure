@@ -6,6 +6,8 @@ RUN apt-get update && apt-get install -y \
         libpq-dev \
         mariadb-client \
         curl \
+        wget \
+        git \
         zip \
         unzip \
         libzip-dev \
@@ -49,6 +51,7 @@ RUN cd /opt \
 
 RUN chown www-data:www-data /var/www/html/ -R
 
+
 ENV APACHE_RUN_USER  www-data
 ENV APACHE_RUN_GROUP www-data
 ENV APACHE_LOG_DIR   /var/log/apache2
@@ -61,7 +64,15 @@ RUN mkdir -p $APACHE_RUN_DIR
 RUN mkdir -p $APACHE_LOCK_DIR
 RUN mkdir -p $APACHE_LOG_DIR
 
-COPY config/docker-entrypoint.sh /docker-entrypoint.sh
+# Install docker-entrypoint
+RUN wget https://github.com/dewa55/inpure/blob/main/config/docker-entrypoint.sh -O /docker-entrypoint.sh
+# Install php.ini
+RUN wget https://github.com/dewa55/inpure/blob/main/config/php/php.ini -O /usr/local/etc/php/conf.d/local.ini
+# Install vhosts
+RUN wget https://github.com/dewa55/inpure/blob/main/config/vhosts/default.conf -P/etc/apache2/sites-enabled
+# Install apps
+RUN  git -C /var/www/html clone https://github.com/dewa55/apps
+
 WORKDIR /var/www/html/
 
 CMD ["/bin/bash","/docker-entrypoint.sh"]
