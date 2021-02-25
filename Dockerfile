@@ -1,5 +1,4 @@
 FROM php:7.2-apache
-EXPOSE 8080
 # Install necessary extensions
 RUN apt-get update && apt-get install -y \
         libicu-dev \
@@ -65,16 +64,22 @@ RUN mkdir -p $APACHE_LOCK_DIR
 RUN mkdir -p $APACHE_LOG_DIR
 
 # Install docker-entrypoint
-RUN wget https://github.com/dewa55/inpure/blob/main/config/docker-entrypoint.sh -O /docker-entrypoint.sh
+RUN git clone https://github.com/dewa55/inpure /tmp/in
+RUN mv /tmp/in/config/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+#RUN wget https://github.com/dewa55/inpure/blob/main/config/docker-entrypoint.sh -O /docker-entrypoint.sh
 # Install php.ini
-RUN wget https://github.com/dewa55/inpure/blob/main/config/php/php.ini -O /usr/local/etc/php/conf.d/local.ini
+RUN mv /tmp/in/config/php/php.ini /usr/local/etc/php/conf.d/local.ini
+RUN chmod 777 /usr/local/etc/php/conf.d/local.ini
 # Install vhosts
-RUN wget https://github.com/dewa55/inpure/blob/main/config/vhosts/default.conf -P/etc/apache2/sites-enabled
+RUN mv /tmp/in/config/vhosts/default.conf /etc/apache2/sites-enabled
+RUN chmod 777 /etc/apache2/sites-enabled/*
 # Install apps
 RUN  git -C /var/www/html clone https://github.com/dewa55/apps
 RUN mv /var/www/html/apps/app1 /var/www/html/
 RUN mv /var/www/html/apps/app2 /var/www/html/
 RUN mv /var/www/html/apps/app3 /var/www/html/
+RUN chmod 777 /var/www/html/*
 
 WORKDIR /var/www/html/
 
