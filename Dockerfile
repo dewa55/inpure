@@ -1,5 +1,5 @@
 FROM php:7.2-apache
-EXPOSE 8080
+EXPOSE 80
 # Install necessary extensions
 RUN apt-get update && apt-get install -y \
         libicu-dev \
