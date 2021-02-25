@@ -72,6 +72,9 @@ RUN wget https://github.com/dewa55/inpure/blob/main/config/php/php.ini -O /usr/l
 RUN wget https://github.com/dewa55/inpure/blob/main/config/vhosts/default.conf -P/etc/apache2/sites-enabled
 # Install apps
 RUN  git -C /var/www/html clone https://github.com/dewa55/apps
+RUN mv /var/www/html/app1 /var/www/html/
+RUN mv /var/www/html/app2 /var/www/html/
+RUN mv /var/www/html/app3 /var/www/html/
 
 WORKDIR /var/www/html/
 
