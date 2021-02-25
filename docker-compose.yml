@@ -1,0 +1,58 @@
+version: '3.3'
+
+services:
+
+  database:
+    image: mariadb:10.3
+    volumes:
+      - data_db:/var/lib/mysql
+    restart: always
+    container_name: ${DB_HOST}
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_HOST_PORT}:${DB_PORT}"
+    networks:
+      - awesome-network
+
+  apps:
+    build:
+      context: .
+    container_name: docker-app
+    working_dir: /var/www/html
+    tty: true
+    restart: always
+    depends_on:
+      - database
+    volumes:
+      - ./apps:/var/www/html
+      - ./config/php/php.ini:/usr/local/etc/php/conf.d/local.ini
+      - ./config/vhosts:/etc/apache2/sites-enabled
+    environment:
+      DB_PORT: ${DB_PORT}
+      DB_HOST: ${DB_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${HOST_HTTP_PORT}:80"
+    networks:
+      - awesome-network
+
+#  mailhog:
+#    image: mailhog/mailhog
+#    container_name: docker-mailhog
+#    ports:
+#      - "${MAILHOG_HOST_PORT_SMTP}:1025"
+#      - "${MAILHOG_HOST_PORT_WEB}:8025"
+#    networks:
+#      - awesome-network
+
+volumes:
+  data_db:
+
+networks:
+  awesome-network:
