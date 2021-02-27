@@ -1,88 +1,77 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
-    "parameters": {
-        "location": {
-            "type": "string"
-        },
-        "containerName": {
-            "type": "string"
-        },
-        "imageType": {
-            "type": "string",
-            "allowedValues": [
-                "Public",
-                "Private"
-            ]
-        },
-        "imageName": {
-            "type": "string"
-        },
-        "osType": {
-            "type": "string",
-            "allowedValues": [
-                "Linux",
-                "Windows"
-            ]
-        },
-        "numberCpuCores": {
-            "type": "string"
-        },
-        "memory": {
-            "type": "string"
-        },
-        "restartPolicy": {
-            "type": "string",
-            "allowedValues": [
-                "OnFailure",
-                "Always",
-                "Never"
-            ]
-        },
-        "ipAddressType": {
-            "type": "string"
-        },
-        "ports": {
-            "type": "array"
-        },
-        "subnetName": {
-            "type": "string"
-        },
-        "subnetAddressPrefix": {
-            "type": "string"
-        }
+    "variables": {
+        "containerName": "mycontainertest",
+        "imageType": "Public",
+        "location": "centralus",
+        "imageName": "dewa55/dewaweb",
+        "networkProfileName": "mycontainername-networkProfile",
+        "interfaceConfigName": "eth0",
+        "myshareName": "myshare",
+        "mymountPath": "/var/www/html",
+        "mystorageAccountName": "myprefix58485",
+        "mystorageAccountKey": "yjBmIjRtDgwmU4gZGiAPKx+r/4U0Q4WJCQI9vz3pkGSwu/O/MNS7454hAKwXc6vBClYHoqUd/CERtvgpoYFWvg==",
+        "interfaceIpConfig": "ipconfigprofile1",
+        "vnetId": "/subscriptions/4ff40786-e32b-439b-a241-6f8fee57c323/resourceGroups/my_RG/providers/Microsoft.Network/virtualNetworks/my-vnet",
+        "subnetId": "/subscriptions/4ff40786-e32b-439b-a241-6f8fee57c323/resourceGroups/my_RG/providers/Microsoft.Network/virtualNetworks/my-vnet/subnets/my-subnet"
     },
     "resources": [
         {
-            "location": "[parameters('location')]",
-            "name": "[parameters('containerName')]",
+            "location": "[variables('location')]",
+            "name": "[variables('containerName')]",
             "type": "Microsoft.ContainerInstance/containerGroups",
             "apiVersion": "2019-12-01",
             "properties": {
                 "containers": [
                     {
-                        "name": "[parameters('containerName')]",
+                        "name": "[variables('containerName')]",
                         "properties": {
-                            "image": "[parameters('imageName')]",
+                            "image": "[variables('imageName')]",
                             "resources": {
                                 "requests": {
-                                    "cpu": "[int(parameters('numberCpuCores'))]",
-                                    "memoryInGB": "[float(parameters('memory'))]"
+                                    "cpu": 1,
+                                    "memoryInGB": 1.5
                                 }
                             },
-                            "ports": "[parameters('ports')]"
+                            "ports": [
+                                {
+                                  "port": 80
+                                }
+                              ],
+                            "volumeMounts": [
+                              {     
+                                "name": "[variables('myshareName')]",
+                                "mountPath": "[variables('mymountPath')]"
+                              }
+                            ]
                         }
                     }
                 ],
-                "restartPolicy": "[parameters('restartPolicy')]",
-                "osType": "[parameters('osType')]",
+                "restartPolicy": "OnFailure",
+                "osType": "Linux",
                 "ipAddress": {
-                    "type": "[parameters('ipAddressType')]",
-                    "ports": "[parameters('ports')]"
+                    "type": "Private",
+                    "ports": [
+                        {
+                          "protocol": "tcp",
+                          "port": "80"
+                        }
+                      ]
                 },
                 "networkProfile": {
                     "Id": "[resourceId('Microsoft.Network/networkProfiles', variables('networkProfileName'))]"
-                }
+                },
+                "volumes": [
+                  {
+                    "name": "[variables('myshareName')]",
+                    "azureFile": {
+                        "shareName": "[variables('myshareName')]",
+                        "storageAccountName": "[variables('mystorageAccountName')]",
+                        "storageAccountKey": "[variables('mystorageAccountKey')]"
+                    }
+                  }
+                ]
             },
             "tags": {},
             "dependsOn": [
@@ -159,7 +148,7 @@
             "name": "[variables('networkProfileName')]",
             "type": "Microsoft.Network/networkProfiles",
             "apiVersion": "2019-11-01",
-            "location": "[parameters('location')]",
+            "location": "[variables('location')]",
             "dependsOn": [
                 "[concat('Microsoft.Resources/deployments/', 'Microsoft.ContainerInstances-20210226171939vnet')]"
             ],
@@ -183,12 +172,5 @@
                 ]
             }
         }
-    ],
-    "variables": {
-        "networkProfileName": "mycontainername-networkProfile",
-        "interfaceConfigName": "eth0",
-        "interfaceIpConfig": "ipconfigprofile1",
-        "vnetId": "/subscriptions/4ff40786-e32b-439b-a241-6f8fee57c323/resourceGroups/my_RG/providers/Microsoft.Network/virtualNetworks/my-vnet",
-        "subnetId": "/subscriptions/4ff40786-e32b-439b-a241-6f8fee57c323/resourceGroups/my_RG/providers/Microsoft.Network/virtualNetworks/my-vnet/subnets/my-subnet"
-    }
+    ]
 }
